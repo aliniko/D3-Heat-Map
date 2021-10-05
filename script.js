@@ -11,6 +11,9 @@ let yScale
 let xAxis
 let yAxis
 
+let minYear
+let maxYear
+
 let width = 1200
 let height = 600
 let padding = 60
@@ -18,7 +21,16 @@ let padding = 60
 let svg = d3.select('svg')
 
 let generateScales = () => {
+
+    minYear = d3.min(values, (item) => {
+        return item['year']
+    })
+    maxYear = d3.max(values, (item) => {
+        return item['year']
+    })
+
     xScale = d3.scaleLinear()
+                .domain([minYear, maxYear + 1])
                 .range([padding, width - padding])
 
     yScale = d3.scaleTime()
@@ -62,12 +74,24 @@ let drawCells = () => {
         .attr('data-temp', (item) => {
             return baseTemp + item['variance']
         })
+        .attr('height', (height - (2 * padding)) / 12)
+        .attr('y', (item) => {
+            return yScale(new Date(0, item['month'] -1, 0, 0, 0, 0, 0))
+        })
+        .attr('width', (item) => {
+            let numberOfYears = maxYear - minYear
+            return (width - (2*padding)) / numberOfYears
+        })
+        .attr('x', (item) => {
+            return xScale(item['year'])
+        })
     
 }
 
 let generateAxes = () => {
 
-    let xAxis = d3.axisBottom(xScale)               
+    let xAxis = d3.axisBottom(xScale) 
+                    .tickFormat(d3.format('d'))              
     svg.append('g')
         .call(xAxis)
         .attr('id', 'x-axis')
